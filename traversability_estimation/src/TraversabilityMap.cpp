@@ -476,12 +476,12 @@ bool TraversabilityMap::isTraversable(grid_map::Polygon& polygon, double& traver
     if (!checkForSlope(*polygonIterator)) return false;
 
     // Check for steps
-    if (!checkForStep(*polygonIterator)) return false;
+//    if (!checkForStep(*polygonIterator)) return false;
 
     // Check for roughness
-    if (checkForRoughness_) {
-      if(!checkForRoughness(*polygonIterator)) return false;
-    }
+//    if (checkForRoughness_) {
+//      if(!checkForRoughness(*polygonIterator)) return false;
+//    }
 
     nCells++;
     if (!traversabilityMap_.isValid(*polygonIterator,
