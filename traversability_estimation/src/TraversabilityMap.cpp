@@ -53,8 +53,8 @@ TraversabilityMap::TraversabilityMap(ros::NodeHandle& nodeHandle)
   // TODO: Adapt map layers to traversability filters.
   traversabilityMapLayers_.push_back(traversabilityType_);
   traversabilityMapLayers_.push_back(slopeType_);
-  traversabilityMapLayers_.push_back(stepType_);
-  traversabilityMapLayers_.push_back(roughnessType_);
+//  traversabilityMapLayers_.push_back(stepType_);
+//  traversabilityMapLayers_.push_back(roughnessType_);
 }
 
 TraversabilityMap::~TraversabilityMap()
@@ -534,18 +534,18 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
       }
 
       // Check for steps
-      if (!checkForStep(*iterator)) {
-        traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
-        return false;
-      }
-
-      // Check for roughness
-      if (checkForRoughness_) {
-        if (!checkForRoughness(*iterator)) {
-          traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
-          return false;
-        }
-      }
+//      if (!checkForStep(*iterator)) {
+//        traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
+//        return false;
+//      }
+//
+//      // Check for roughness
+//      if (checkForRoughness_) {
+//        if (!checkForRoughness(*iterator)) {
+//          traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
+//          return false;
+//        }
+//      }
     } else {
       // Check for slopes
       if (!checkForSlope(*iterator)) {
@@ -561,32 +561,32 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
       }
 
       // Check for steps
-      if (!checkForStep(*iterator)) {
-        double radius = iterator.getCurrentRadius();
-        if (radius <= radiusMin) {
-          traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
-          return false;
-        }
-        double factor = ((radius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
-        traversability *= factor / nCells;
-        traversabilityMap_.at("traversability_footprint", indexCenter) = traversability;
-        return true;
-      }
-
-      // Check for roughness
-      if (checkForRoughness_) {
-        if (!checkForRoughness(*iterator)) {
-          double radius = iterator.getCurrentRadius();
-          if (radius <= radiusMin) {
-            traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
-            return false;
-          }
-          double factor = ((radius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
-          traversability *= factor / nCells;
-          traversabilityMap_.at("traversability_footprint", indexCenter) = traversability;
-          return true;
-        }
-      }
+//      if (!checkForStep(*iterator)) {
+//        double radius = iterator.getCurrentRadius();
+//        if (radius <= radiusMin) {
+//          traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
+//          return false;
+//        }
+//        double factor = ((radius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
+//        traversability *= factor / nCells;
+//        traversabilityMap_.at("traversability_footprint", indexCenter) = traversability;
+//        return true;
+//      }
+//
+//      // Check for roughness
+//      if (checkForRoughness_) {
+//        if (!checkForRoughness(*iterator)) {
+//          double radius = iterator.getCurrentRadius();
+//          if (radius <= radiusMin) {
+//            traversabilityMap_.at("traversability_footprint", indexCenter) = 0.0;
+//            return false;
+//          }
+//          double factor = ((radius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
+//          traversability *= factor / nCells;
+//          traversabilityMap_.at("traversability_footprint", indexCenter) = traversability;
+//          return true;
+//        }
+//      }
     }
 
     nCells++;
@@ -702,30 +702,41 @@ bool TraversabilityMap::checkForStep(const grid_map::Index& indexStep)
 
 bool TraversabilityMap::checkForSlope(const grid_map::Index& index)
 {
+//        ROS_INFO("checkForSlope");
   if (traversabilityMap_.at(slopeType_, index) == 0.0) {
+//      grid_map::Position position;
+//      traversabilityMap_.getPosition(index, position);
+//      ROS_INFO_STREAM("Nontraversable at: " << position[0] << "," << position[1]);
+      return false;
+  }
     if (!traversabilityMap_.isValid(index, "slope_footprint")) {
-      double windowRadius = 3.0*traversabilityMap_.getResolution(); // TODO: read this as a parameter?
-      double criticalLength = maxGapWidth_ / 3.0;
-      int nSlopesCritical = floor(2 * windowRadius * criticalLength / pow(traversabilityMap_.getResolution(), 2));
+//        ROS_INFO("!isValid");
+//      double windowRadius = 3.0*traversabilityMap_.getResolution(); // TODO: read this as a parameter?
+      double windowRadius = 0.541;
+//      double criticalLength = maxGapWidth_ / 3.0;
+//      int nSlopesCritical = floor(2 * windowRadius * criticalLength / pow(traversabilityMap_.getResolution(), 2));
 
       // Requested position (center) of circle in map.
       grid_map::Position center;
       traversabilityMap_.getPosition(index, center);
-      int nSlopes = 0;
+//      int nSlopes = 0;
       for (grid_map::CircleIterator circleIterator(traversabilityMap_, center, windowRadius);
           !circleIterator.isPastEnd(); ++circleIterator) {
-        if (traversabilityMap_.at(slopeType_, *circleIterator) == 0.0)
-          nSlopes++;
-        if (nSlopes > nSlopesCritical) {
+        if (traversabilityMap_.at(slopeType_, *circleIterator) == 0.0) {
+//          nSlopes++;
+//        if (nSlopes > nSlopesCritical) {
+//            grid_map::Position position;
+//            traversabilityMap_.getPosition(index, position);
+//            ROS_INFO_STREAM("Nontraversable within radius " << windowRadius << " from: " << position[0] << "," << position[1]);
           traversabilityMap_.at("slope_footprint", index) = 0.0;
           return false;
         }
       }
       traversabilityMap_.at("slope_footprint", index) = 1.0;
     } else if (traversabilityMap_.at("slope_footprint", index) == 0.0) {
+//        ROS_INFO("footprint==0");
       return false;
     }
-  }
   return true;
 }
 
