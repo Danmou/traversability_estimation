@@ -296,7 +296,9 @@ bool TraversabilityMap::checkFootprintPath(
   }
 
   double radius = path.radius;
-  double offset = 0.15;
+//  double offset = 0.15;
+  double offset = 0.3;
+//  ROS_INFO_STREAM("checkFootprintPath radius "<<radius<<" offset "<<offset);
   result.is_safe = false;
   result.traversability = 0.0;
   result.area = 0.0;
@@ -504,6 +506,8 @@ bool TraversabilityMap::isTraversable(grid_map::Polygon& polygon, double& traver
 
 bool TraversabilityMap::isTraversable(const grid_map::Position& center, const double& radiusMax, double& traversability, const double& radiusMin)
 {
+//  ROS_INFO_STREAM("radiusMin: "<<radiusMin);
+//  ROS_INFO_STREAM("radiusMax: "<<radiusMax);
   // Handle cases of footprints outside of map.
   if (!traversabilityMap_.isInside(center)) {
     traversability = traversabilityDefault_;
@@ -555,7 +559,7 @@ bool TraversabilityMap::isTraversable(const grid_map::Position& center, const do
           return false;
         }
         double factor = ((radius - radiusMin) / (radiusMax - radiusMin) + 1.0) / 2.0;
-        traversability *= factor / nCells;
+        traversability *= (nCells>0) ? factor / nCells : factor;
         traversabilityMap_.at("traversability_footprint", indexCenter) = traversability;
         return true;
       }
@@ -712,7 +716,7 @@ bool TraversabilityMap::checkForSlope(const grid_map::Index& index)
     if (!traversabilityMap_.isValid(index, "slope_footprint")) {
 //        ROS_INFO("!isValid");
 //      double windowRadius = 3.0*traversabilityMap_.getResolution(); // TODO: read this as a parameter?
-      double windowRadius = 0.541;
+      double windowRadius = 0.1;
 //      double criticalLength = maxGapWidth_ / 3.0;
 //      int nSlopesCritical = floor(2 * windowRadius * criticalLength / pow(traversabilityMap_.getResolution(), 2));
 
